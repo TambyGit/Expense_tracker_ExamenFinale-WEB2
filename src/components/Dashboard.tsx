@@ -162,15 +162,15 @@ export default function Dashboard() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Monthly Change</p>
-              <p className={`text-2xl font-bold ${monthlyChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
+              <p className={`text-2xl font-bold ${monthlyChange >= 0 ? 'text-red-600' : 'text-yellow-600'}`}>
                 {monthlyChange >= 0 ? '+' : ''}{monthlyChange.toFixed(1)}%
               </p>
             </div>
-            <div className={`p-3 rounded-lg ${monthlyChange >= 0 ? 'bg-red-100' : 'bg-green-100'}`}>
+            <div className={`p-3 rounded-lg ${monthlyChange >= 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
               {monthlyChange >= 0 ? (
                 <TrendingUp className="w-6 h-6 text-red-600" />
               ) : (
-                <TrendingDown className="w-6 h-6 text-green-600" />
+                <TrendingDown className="w-6 h-6 text-yellow-600" />
               )}
             </div>
           </div>

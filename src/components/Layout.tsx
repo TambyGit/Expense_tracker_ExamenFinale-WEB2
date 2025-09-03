@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LogOut, DollarSign, TrendingUp, PlusCircle, Filter } from 'lucide-react';
+import { LogOut, DollarSign, TrendingUp, PlusCircle } from 'lucide-react';
 
 interface LayoutProps {
   children: React.ReactNode;

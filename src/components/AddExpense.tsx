@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Save, X } from 'lucide-react';
 import toast from 'react-hot-toast';
-
-interface Expense {
-  id: string;
-  title: string;
-  amount: number;
-  category: string;
-  description: string | null;
-  date: string;
-}
+import { Expense } from '../../backend/src/types';
 
 interface AddExpenseProps {
-  editingExpense?: Expense | null;
+  editingExpense: Expense | null; // Accepte null
   onExpenseAdded: () => void;
   onCancelEdit: () => void;
 }
@@ -40,7 +31,7 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
     date: new Date().toISOString().split('T')[0]
   });
   const [loading, setLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   useEffect(() => {
     if (editingExpense) {
@@ -64,41 +55,44 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !token) return;
+    console.log('Ajout d\'une dépense avec token :', token);
 
     setLoading(true);
 
     try {
       const expenseData = {
-        user_id: user.id,
         title: formData.title,
         amount: parseFloat(formData.amount),
         category: formData.category,
         description: formData.description || null,
-        date: formData.date,
-        updated_at: new Date().toISOString()
+        date: formData.date
       };
 
+      let res;
       if (editingExpense) {
-        const { error } = await supabase
-          .from('expenses')
-          .update(expenseData)
-          .eq('id', editingExpense.id);
-
-        if (error) throw error;
+        res = await fetch(`${import.meta.env.VITE_API_URL}/expenses/${editingExpense.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(expenseData)
+        });
+        if (!res.ok) throw new Error('Failed to update expense');
         toast.success('Expense updated successfully!');
         onCancelEdit();
       } else {
-        const { error } = await supabase
-          .from('expenses')
-          .insert([{
-            ...expenseData,
-            created_at: new Date().toISOString()
-          }]);
-
-        if (error) throw error;
+        res = await fetch(`${import.meta.env.VITE_API_URL}/expenses`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify(expenseData)
+        });
+        if (!res.ok) throw new Error('Failed to add expense');
         toast.success('Expense added successfully!');
-        
         setFormData({
           title: '',
           amount: '',

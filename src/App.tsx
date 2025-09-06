@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Auth from './components/Auth';
@@ -6,15 +6,7 @@ import Layout from './components/Layout';
 import Dashboard from './components/Dashboard';
 import ExpenseList from './components/ExpenseList';
 import AddExpense from './components/AddExpense';
-
-interface Expense {
-  id: string;
-  title: string;
-  amount: number;
-  category: string;
-  description: string | null;
-  date: string;
-}
+import { Expense } from '../backend/src/types'; // Ajustez le chemin selon la structure de votre projet
 
 function AppContent() {
   const { user, loading } = useAuth();

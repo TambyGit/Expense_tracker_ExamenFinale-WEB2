@@ -1,19 +1,10 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { Edit, Trash2, Search, Filter, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+import { Expense } from '../../backend/src/types';
 
-interface Expense {
-  id: string;
-  title: string;
-  amount: number;
-  category: string;
-  description: string | null;
-  date: string;
-  created_at: string;
-}
 
 interface ExpenseListProps {
   onEditExpense: (expense: Expense) => void;
@@ -39,35 +30,46 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState<'date' | 'amount' | 'title'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
-  const { user } = useAuth();
+  const { user, token } = useAuth();
 
   useEffect(() => {
     fetchExpenses();
-  }, [user]);
+  }, [user, token]);
 
   useEffect(() => {
     filterAndSortExpenses();
   }, [expenses, searchTerm, selectedCategory, sortBy, sortOrder]);
 
   const fetchExpenses = async () => {
-    if (!user) return;
+  if (!user || !token) return;
 
-    try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
+  console.log('Récupération des dépenses avec token :', token);
 
-      if (error) throw error;
-      setExpenses(data || []);
-    } catch (error) {
-      console.error('Error fetching expenses:', error);
-      toast.error('Failed to load expenses');
-    } finally {
-      setLoading(false);
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/expenses`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-cache'
+    });
+
+    console.log('Statut de la réponse GET :', res.status);
+
+    if (!res.ok) {
+      throw new Error('Échec de la récupération des dépenses');
     }
-  };
+    const data = await res.json();
+    const parsed: Expense[] = data.map((exp: any) => ({
+      ...exp,
+      amount: parseFloat(exp.amount),
+    }));
+    setExpenses(parsed);
+  } catch (error) {
+    console.error('Erreur lors de la récupération des dépenses :', error);
+    toast.error('Échec du chargement des dépenses');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const filterAndSortExpenses = () => {
     let filtered = [...expenses];
@@ -86,7 +88,6 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
 
     filtered.sort((a, b) => {
       let aValue: any, bValue: any;
-      
       switch (sortBy) {
         case 'date':
           aValue = new Date(a.date);
@@ -104,27 +105,21 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
           aValue = new Date(a.date);
           bValue = new Date(b.date);
       }
-
-      if (sortOrder === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
+      return sortOrder === 'asc' ? (aValue < bValue ? -1 : 1) : (aValue > bValue ? -1 : 1);
     });
 
     setFilteredExpenses(filtered);
   };
 
-  const handleDeleteExpense = async (id: string) => {
+  const handleDeleteExpense = async (id: number) => {
     if (!confirm('Are you sure you want to delete this expense?')) return;
 
     try {
-      const { error } = await supabase
-        .from('expenses')
-        .delete()
-        .eq('id', id);
-
-      if (error) throw error;
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/expenses/${id}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error('Failed to delete expense');
 
       setExpenses(expenses.filter(expense => expense.id !== id));
       toast.success('Expense deleted successfully');
@@ -156,6 +151,7 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
 
   return (
     <div className="space-y-6">
+      {/* header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
         <div className="text-sm text-gray-500">
@@ -225,15 +221,13 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
                     {expense.category}
                   </span>
                 </div>
-                {expense.description && (
-                  <p className="text-gray-600 mb-2">{expense.description}</p>
-                )}
+                {expense.description && <p className="text-gray-600 mb-2">{expense.description}</p>}
                 <div className="flex items-center text-sm text-gray-500">
                   <Calendar className="w-4 h-4 mr-1" />
                   {format(new Date(expense.date), 'MMMM dd, yyyy')}
                 </div>
               </div>
-              
+
               <div className="flex items-center space-x-4">
                 <div className="text-right">
                   <p className="text-2xl font-bold text-gray-900">${expense.amount.toFixed(2)}</p>

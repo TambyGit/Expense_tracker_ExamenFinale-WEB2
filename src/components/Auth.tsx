@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { DollarSign, Eye, EyeOff, Mail } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function Auth() {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -10,7 +11,7 @@ export default function Auth() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const { signIn, signUp, signInWithGoogle } = useAuth();
+  const { signIn, signUp} = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,29 +24,13 @@ export default function Auth() {
         await signIn(email, password);
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      console.error('Auth error:', errorMessage);
-      
-      // Show user-friendly error message
-      if (errorMessage.includes('Missing Supabase environment variables')) {
-        alert('Configuration Error: Please set up your Supabase credentials in the .env file');
-      }
+      console.error('Auth error:', error);
+      toast.error('An error occurred during authentication');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    setLoading(true);
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      console.error('Google auth error:', errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  };
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -129,33 +114,6 @@ export default function Auth() {
                 </button>
               </div>
             </div>
-          </div>
-
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
-            </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-gradient-to-br from-blue-50 via-white to-purple-50 text-gray-500">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          <div>
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="group relative w-full flex justify-center items-center py-3 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 transform hover:scale-105"
-            >
-              <Mail className="w-5 h-5 mr-3 text-red-500" />
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
-              ) : (
-                `Continue with Google`
-              )}
-            </button>
           </div>
 
           <div>

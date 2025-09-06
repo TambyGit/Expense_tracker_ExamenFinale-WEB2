@@ -1,19 +1,10 @@
-import { useState, useEffect } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { supabase } from '../lib/supabase';
+import React, { useState, useEffect, useRef } from 'react';
+import Chart from 'chart.js/auto';
 import { useAuth } from '../contexts/AuthContext';
 import { DollarSign, TrendingUp, TrendingDown, Calendar } from 'lucide-react';
 import { format, startOfWeek } from 'date-fns';
-
-interface Expense {
-  id: string;
-  title: string;
-  amount: number;
-  category: string;
-  description: string | null;
-  date: string;
-  created_at: string;
-}
+import toast from 'react-hot-toast';
+import { Expense } from '../../backend/src/types';
 
 interface CategoryTotal {
   name: string;
@@ -28,33 +19,106 @@ interface WeeklyData {
 export default function Dashboard() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, token } = useAuth();
+  const barChartRef = useRef<HTMLCanvasElement>(null);
+  const pieChartRef = useRef<HTMLCanvasElement>(null);
+  const chartInstances = useRef<{ bar?: Chart; pie?: Chart }>({});
+
+  // Fetch data depuis API
+const fetchExpenses = async () => {
+  if (!user || !token) return;
+
+  console.log('Fetching expenses with token:', token);
+
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/expenses`, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+      cache: 'no-cache'
+    });
+
+    console.log('GET response status:', res.status);
+    const data = await res.json();
+    console.log('Raw response data:', data);
+
+    if (!res.ok) throw new Error('Failed to fetch expenses');
+    const parsed: Expense[] = data.map((exp: any) => ({
+      ...exp,
+      amount: parseFloat(exp.amount),
+    }));
+    console.log('Parsed expenses:', parsed);
+    setExpenses(parsed);
+  } catch (error) {
+    console.error('Error fetching expenses:', error);
+    toast.error('Failed to load expenses');
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchExpenses();
-  }, [user]);
+  }, [user, token]);
 
-  const fetchExpenses = async () => {
-    if (!user) return;
+  // Charts
+  useEffect(() => {
+    if (!loading) {
+      if (chartInstances.current.bar) chartInstances.current.bar.destroy();
+      if (chartInstances.current.pie) chartInstances.current.pie.destroy();
 
-    try {
-      const { data, error } = await supabase
-        .from('expenses')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('date', { ascending: false });
+      if (barChartRef.current && weeklyData.length > 0) {
+        chartInstances.current.bar = new Chart(barChartRef.current, {
+          type: 'bar',
+          data: {
+            labels: weeklyData.map(d => d.day),
+            datasets: [{
+              label: 'Amount',
+              data: weeklyData.map(d => d.amount),
+              backgroundColor: '#3B82F6',
+              borderRadius: 4,
+            }],
+          },
+          options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } },
+            plugins: { tooltip: { callbacks: { label: (context) => {
+              const value = context.raw as number;
+              return `$${value.toFixed(2)}`;
+            }}}},
+          },
+        });
+      }
 
-      if (error) throw error;
-      setExpenses(data || []);
-    } catch (error) {
-      console.error('Error fetching expenses:', error);
-    } finally {
-      setLoading(false);
+      if (pieChartRef.current && categoryTotals.length > 0) {
+        chartInstances.current.pie = new Chart(pieChartRef.current, {
+          type: 'pie',
+          data: {
+            labels: categoryTotals.map(c => c.name),
+            datasets: [{
+              data: categoryTotals.map(c => c.value),
+              backgroundColor: COLORS,
+            }],
+          },
+          options: {
+            responsive: true,
+            plugins: { tooltip: { callbacks: { label: (context) => {
+              const value = context.raw as number;
+              return `$${value.toFixed(2)}`;
+            }}}},
+          },
+        });
+      }
     }
-  };
 
-  // Calculate statistics
+    return () => {
+      if (chartInstances.current.bar) chartInstances.current.bar.destroy();
+      if (chartInstances.current.pie) chartInstances.current.pie.destroy();
+    };
+  }, [loading, expenses]);
+
+  // Statistiques
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+
   const thisMonth = expenses.filter(expense => {
     const expenseDate = new Date(expense.date);
     const now = new Date();
@@ -72,7 +136,7 @@ export default function Dashboard() {
 
   const monthlyChange = lastMonthTotal === 0 ? 0 : ((thisMonthTotal - lastMonthTotal) / lastMonthTotal) * 100;
 
-  // Prepare data for charts
+  // Données pour les charts
   const categoryTotals: CategoryTotal[] = expenses.reduce((acc, expense) => {
     const existingCategory = acc.find(cat => cat.name === expense.category);
     if (existingCategory) {
@@ -83,10 +147,9 @@ export default function Dashboard() {
     return acc;
   }, [] as CategoryTotal[]);
 
-  // Weekly data for bar chart
   const weeklyData: WeeklyData[] = [];
   const startOfThisWeek = startOfWeek(new Date());
-  
+
   for (let i = 0; i < 7; i++) {
     const date = new Date(startOfThisWeek);
     date.setDate(date.getDate() + i);
@@ -95,7 +158,7 @@ export default function Dashboard() {
       return expenseDate.toDateString() === date.toDateString();
     });
     const totalAmount = dayExpenses.reduce((sum, expense) => sum + expense.amount, 0);
-    
+
     weeklyData.push({
       day: format(date, 'EEE'),
       amount: totalAmount
@@ -105,25 +168,12 @@ export default function Dashboard() {
   const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4'];
 
   if (loading) {
-    return (
-      <div className="space-y-6">
-        <div className="animate-pulse">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="bg-gray-200 rounded-lg h-32"></div>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-gray-200 rounded-lg h-80"></div>
-            <div className="bg-gray-200 rounded-lg h-80"></div>
-          </div>
-        </div>
-      </div>
-    );
+    return <p className="text-center text-gray-500">Loading...</p>;
   }
 
   return (
     <div className="space-y-6">
+      {/* header */}
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <div className="flex items-center text-sm text-gray-500">
@@ -132,7 +182,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Statistics Cards */}
+       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:-translate-y-3 transition duration-500 hover:shadow-lg hover:shadow-blue-800">
           <div className="flex items-center justify-between">
@@ -158,63 +208,36 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:-translate-y-3 transition duration-500 hover:shadow-lg hover:shadow-yellow-600">
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:-translate-y-3 transition duration-500 hover:shadow-lg hover:shadow-red-600">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Monthly Change</p>
-              <p className={`text-2xl font-bold ${monthlyChange >= 0 ? 'text-red-600' : 'text-yellow-600'}`}>
+              <p className={`text-2xl font-bold ${monthlyChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {monthlyChange >= 0 ? '+' : ''}{monthlyChange.toFixed(1)}%
               </p>
             </div>
-            <div className={`p-3 rounded-lg ${monthlyChange >= 0 ? 'bg-red-100' : 'bg-yellow-100'}`}>
+            <div className={`p-3 rounded-lg ${monthlyChange >= 0 ? 'bg-red-100' : 'bg-green-100'}`}>
               {monthlyChange >= 0 ? (
                 <TrendingUp className="w-6 h-6 text-red-600" />
               ) : (
-                <TrendingDown className="w-6 h-6 text-yellow-600" />
+                <TrendingDown className="w-6 h-6 text-green-600" />
               )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* Charts */}
+      {/* charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly Expenses Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Expenses</h3>
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={weeklyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
-              <Tooltip formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Amount']} />
-              <Bar dataKey="amount" fill="#3B82F6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <canvas ref={barChartRef} height={300}></canvas>
         </div>
 
-        {/* Category Distribution Chart */}
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Expenses by Category</h3>
           {categoryTotals.length > 0 ? (
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={categoryTotals}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={120}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {categoryTotals.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Amount']} />
-              </PieChart>
-            </ResponsiveContainer>
+            <canvas ref={pieChartRef} height={300}></canvas>
           ) : (
             <div className="flex items-center justify-center h-[300px] text-gray-500">
               <p>No expenses to display</p>
@@ -223,7 +246,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Recent Expenses */}
+      {/* dépenses récentes */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-semibold text-gray-900">Recent Expenses</h3>
@@ -234,6 +257,9 @@ export default function Dashboard() {
               <div className="flex-1">
                 <p className="text-sm font-medium text-gray-900">{expense.title}</p>
                 <p className="text-sm text-gray-500">{expense.category}</p>
+                {expense.description && (
+                  <p className="text-xs text-gray-400 italic">{expense.description}</p>
+                )}
               </div>
               <div className="text-right">
                 <p className="text-sm font-medium text-gray-900">${expense.amount.toFixed(2)}</p>

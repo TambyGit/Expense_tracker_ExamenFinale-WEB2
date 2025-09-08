@@ -138,8 +138,8 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Title */}
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
+              <label htmlFor="title" className=" textAddExpenses block text-sm font-medium  mb-2">
+                Title <span className='importantc text-red-600'>*</span>
               </label>
               <input
                 type="text"
@@ -148,15 +148,15 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
                 required
                 value={formData.title}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                 placeholder="e.g., Lunch at restaurant"
               />
             </div>
 
             {/* Amount */}
             <div>
-              <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-2">
-                Amount *
+              <label htmlFor="amount" className="textAddExpenses block text-sm font-medium mb-2">
+                Amount <span className='importantc text-red-600'>*</span>
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
@@ -169,7 +169,7 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
                   min="0"
                   value={formData.amount}
                   onChange={handleInputChange}
-                  className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className=" input w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="0.00"
                 />
               </div>
@@ -177,8 +177,8 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
 
             {/* Category */}
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-2">
-                Category *
+              <label htmlFor="category" className=" textAddExpenses block text-sm font-medium mb-2">
+                Category <span className='importantc text-red-600'>*</span>
               </label>
               <select
                 id="category"
@@ -186,7 +186,7 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
                 required
                 value={formData.category}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
                 {categories.map(category => (
                   <option key={category} value={category}>{category}</option>
@@ -196,8 +196,8 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
 
             {/* Date */}
             <div>
-              <label htmlFor="date" className="block text-sm font-medium text-gray-700 mb-2">
-                Date *
+              <label htmlFor="date" className="textAddExpenses block text-sm font-medium mb-2">
+                Date <span className='importantc text-red-600'>*</span>
               </label>
               <input
                 type="date"
@@ -206,14 +206,14 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
                 required
                 value={formData.date}
                 onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className=" input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+            <label htmlFor="description" className="textAddExpenses block text-sm font-medium mb-2">
               Description
             </label>
             <textarea
@@ -222,7 +222,7 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
               rows={3}
               value={formData.description}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className=" input w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               placeholder="Add any additional notes about this expense..."
             />
           </div>
@@ -247,7 +247,7 @@ export default function AddExpense({ editingExpense, onExpenseAdded, onCancelEdi
 
       {/* Recent Expenses Preview */}
       {!editingExpense && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="input bg-blue-50 border border-blue-200 rounded-lg p-4">
           <h3 className="text-sm font-medium text-blue-900 mb-2">💡 Tips for tracking expenses</h3>
           <ul className="text-sm text-blue-800 space-y-1">
             <li>• Be specific with titles to easily identify expenses later</li>

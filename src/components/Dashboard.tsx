@@ -187,7 +187,7 @@ const fetchExpenses = async () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:-translate-y-3 transition duration-500 hover:shadow-lg hover:shadow-blue-800">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Expenses</p>
+              <p className="text-sm font-medium text-gray-400">Total Expenses</p>
               <p className="text-2xl font-bold text-gray-900">${totalExpenses.toFixed(2)}</p>
             </div>
             <div className="p-3 bg-blue-100 rounded-lg">
@@ -199,7 +199,7 @@ const fetchExpenses = async () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:-translate-y-3 transition duration-500 hover:shadow-lg hover:shadow-green-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">This Month</p>
+              <p className="text-sm font-medium text-gray-400">This Month</p>
               <p className="text-2xl font-bold text-gray-900">${thisMonthTotal.toFixed(2)}</p>
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
@@ -211,7 +211,7 @@ const fetchExpenses = async () => {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 hover:-translate-y-3 transition duration-500 hover:shadow-lg hover:shadow-red-600">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Monthly Change</p>
+              <p className="text-sm font-medium text-gray-400">Monthly Change</p>
               <p className={`text-2xl font-bold ${monthlyChange >= 0 ? 'text-red-600' : 'text-green-600'}`}>
                 {monthlyChange >= 0 ? '+' : ''}{monthlyChange.toFixed(1)}%
               </p>

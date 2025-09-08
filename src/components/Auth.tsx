@@ -38,10 +38,10 @@ export default function Auth() {
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg">
             <DollarSign className="w-8 h-8 text-white" />
           </div>
-          <h2 className="mt-6 text-3xl font-bold text-gray-900">
+          <h2 className="mt-6 text-3xl font-bold text-gray-800">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </h2>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-gray-700">
             {isSignUp
               ? 'Start tracking your expenses today'
               : 'Sign in to your account'}

@@ -1,3 +1,105 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-color: #f7fafc;
+  --text-color: #2d3748;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --nav-bg: #ffffff;
+  --nav-border: #e2e8f0;
+}
+
+.dark {
+  --bg-color: #1a202c;
+  --text-color: #e2e8f0;
+  --card-bg: #282e37;
+  --card-border: #484e59;
+  --nav-bg: #2d3748;
+  --nav-border: #4a5568;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.bg-white {
+  background-color: var(--card-bg) !important;
+}
+
+.border-gray-200 {
+  border-color: var(--card-border) !important;
+}
+
+.bg-gray-50 {
+  background-color: var(--bg-color) !important;
+}
+
+.bg-gray-800 {
+  background-color: var(--nav-bg) !important;
+}
+
+.border-gray-700 {
+  border-color: var(--nav-border) !important;
+}
+
+.text-gray-900 {
+  color: var(--text-color) !important;
+}
+
+.text-gray-600 {
+  color: #d1d6dd !important;
+}
+
+.dark .text-gray-600 {
+  color: #cccdd0 !important;
+}
+
+.text-gray-500 {
+  color: #687287 !important;
+}
+
+.dark .text-gray-500 {
+  color: #e5e5e5 !important;
+}
+
+.hover\:text-gray-700:hover {
+  color: #c9cbce !important;
+}
+
+.dark .hover\:text-gray-700:hover {
+  color: #e2e8f0 !important;
+}
+
+.hover\:border-gray-300:hover {
+  border-color: #e2e8f0 !important;
+}
+
+.dark .hover\:border-gray-300:hover {
+  border-color: #4a5568 !important;
+}
+.dark .input{
+    background-color: var(--card-border);
+    color: var(--text-color);
+    border: none;
+}
+.text-card {
+    color: rgb(188, 0, 0);
+}
+.dark .text-blue-900{
+    color: white;
+}
+.dark .text-blue-800{
+    color: rgb(96, 136, 174);
+}
+.textAddExpenses{
+    color: var(--text-color);
+}
+
+.dark .textAddExpenses{
+    color: var(--text-color);
+    background-color: var(--card-bg);
+}

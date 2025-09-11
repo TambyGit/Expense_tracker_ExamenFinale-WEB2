@@ -13,7 +13,6 @@ interface AuthContextType {
   loading: boolean;
   signUp: (email: string, password: string, fullName: string) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
-  signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
   token: string | null;
 }
@@ -94,17 +93,11 @@ const signIn = async (email: string, password: string) => {
     toast.success('Signed out successfully');
   };
 
-  const signInWithGoogle = async () => {
-    
-    toast.error('Google sign-in not implemented yet');
-  };
-
   const value = {
     user,
     loading,
     signUp,
     signIn,
-    signInWithGoogle,
     signOut,
     token,
   };

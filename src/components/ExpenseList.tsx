@@ -145,7 +145,7 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
   `;
   document.body.appendChild(input);
 
-  const canvas = await html2canvas(input, { scale: 2 }); // Améliore la qualité avec scale
+  const canvas = await html2canvas(input, { scale: 2 });
   const imgData = canvas.toDataURL('image/png');
   const pdf = new jsPDF({
     orientation: 'portrait',
@@ -153,7 +153,7 @@ export default function ExpenseList({ onEditExpense }: ExpenseListProps) {
     format: 'a4'
   });
   const imgProps = pdf.getImageProperties(imgData);
-  const pdfWidth = 667; // Largeur A4 en mm
+  const pdfWidth = 667; 
   const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
   pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
   pdf.save(`receipt_${expense.id}_${format(new Date(), 'yyyyMMdd_HHmmss')}.pdf`);

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Chart from 'chart.js/auto';
 import { useAuth } from '../contexts/AuthContext';
 import { DollarSign, TrendingUp, TrendingDown, Calendar } from 'lucide-react';

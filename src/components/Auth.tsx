@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { DollarSign, Eye, EyeOff, Mail } from 'lucide-react';
+import { DollarSign, Eye, EyeOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 export default function Auth() {

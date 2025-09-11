@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { Expense } from '../../backend/src/types';
 
 interface AddExpenseProps {
-  editingExpense: Expense | null; // Accepte null
+  editingExpense: Expense | null
   onExpenseAdded: () => void;
   onCancelEdit: () => void;
 }
